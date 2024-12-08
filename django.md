@@ -68,15 +68,8 @@ Your submission will be evaluated on the following parameters:
    - Use the provided [Pull Request template](https://github.com/AtomicAds/morpheus/blob/main/.github/pull_request_template.md).
    - Answer all questions and check relevant boxes in the template.
 
-1. Fork this repository to your personal Github profile
-2. Remove all files and folders in the forked repository and start developing your project in it
-3. Add a readme to the root location of your repository that details on exactly how to run the code
-4. Fill the [Pull Request template](https://github.com/AtomicAds/morpheus/blob/main/.github/pull_request_template.md) while you are raising a 
-    *   Check all the boxes that your Pull Request fulfills.
-    *   Answer ALL questions in the template
-
 ### Code of Ethics
-- Be original. Submissions are public via GitHub and will be reviewed thoroughly.
+- Be original. Submissions are public via GitHub and will be reviewed thoroughly. In cases of plagiarism, the work will be deemed invalid and disregarded.
 - Cite any external code you use, including the source and its licensing terms.
 
 ### Learning Resources
