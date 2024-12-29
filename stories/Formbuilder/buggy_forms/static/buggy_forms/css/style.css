@@ -600,6 +600,11 @@ form label.required:after {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+    background: #1a7ed9;
 }
 
 .close {
@@ -726,4 +731,39 @@ form label.required:after {
     text-decoration: none;
     border-radius: 4px;
     margin-top: 20px;
+}
+
+.form-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.form-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c5282;
+}
+
+.delete-form-btn{
+    margin-left: 20px;
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.delete-form-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }

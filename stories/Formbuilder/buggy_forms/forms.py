@@ -45,9 +45,10 @@ class ResponseForm(forms.Form):
                 )
             elif question.question_type == Question.DROPDOWN:
                 choices = question.get_choices_list()
+                choices_with_empty = [('','Select')] + [(choice, choice) for choice in choices]
                 self.fields[field_name] = forms.ChoiceField(
                     label=question.text,
-                    choices=[(choice, choice) for choice in choices],  # Ensure choices are tuples
+                    choices=choices_with_empty,
                     required=False,
                     widget=forms.Select()
                 )

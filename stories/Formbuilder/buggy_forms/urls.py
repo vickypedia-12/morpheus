@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import create_form, register, add_question, list_forms, submit_response, view_analytics, Base, edit_form, edit_question, reorder_questions, delete_question,generate_form_qr
+from .views import create_form, register, add_question, list_forms, submit_response, view_analytics, Base, edit_form, edit_question, reorder_questions, delete_question,generate_form_qr, delete_form
 from django.conf.urls import handler404, handler500
 
 handler404 = 'buggy_forms.views.custom_404'
@@ -18,4 +18,5 @@ urlpatterns = [
     path('forms/<int:form_id>/reorder/', reorder_questions, name='reorder_questions'),
     path('delete-question/<int:question_id>/',delete_question, name='delete_question'),
     path('generate-form-qr/<int:form_id>/', generate_form_qr, name='generate_form_qr'), 
+    path('delete-form/<int:form_id>/', delete_form, name='delete_form'),
 ]

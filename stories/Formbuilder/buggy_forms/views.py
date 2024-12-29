@@ -299,3 +299,15 @@ def custom_404(request, exception):
 
 def custom_500(request):
     return render(request, 'buggy_forms/500.html', status=500)
+
+@login_required
+def delete_form(request, form_id):
+    form = get_object_or_404(Form, id=form_id)
+    if form.created_by != request.user:
+        raise PermissionDenied
+    
+    if request.method == 'POST':
+        form.delete()
+        messages.success(request, 'Form deleted successfully.')
+        return redirect('list_forms')
+    return redirect('edit_form', form_id=form_id)

@@ -8,7 +8,9 @@
 
 {% block content %}
     <div class="edit-form-container">
-        <h2>Edit Form</h2>
+        <div class="form-header">
+            <h2>Edit Form</h2>
+        </div>
         
         <!-- Form Title -->
         <form method="post">
@@ -68,6 +70,23 @@
                 {% endfor %}
             </ul>
         </div>
+
+        <div id="deleteFormModal" class="modal">
+            <div class="modal-content">
+                <h3>Delete Form</h3>
+                <p>Are you sure you want to delete this form? This cannot be undone.</p>
+                <div class="modal-buttons">
+                    <form action="{% url 'delete_form' form_id=form_id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
+                    </form>
+                    <button onclick="closeDeleteModal()" class="cancel-delete-btn">No, Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div class = "delete-form-action">
+            <button type="button" class="delete-form-btn" onclick="openDeleteModal()">Delete Form</button>
+        </div>
     </div>
 {% endblock %}
 
@@ -117,5 +136,12 @@
             }
         });
     });
-</script>
+    function openDeleteModal() {
+        document.getElementById('deleteFormModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteFormModal').style.display = 'none';
+    }
+    </script>
 {% endblock %}
