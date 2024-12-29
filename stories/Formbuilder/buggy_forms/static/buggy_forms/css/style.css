@@ -638,10 +638,11 @@ form label.required:after {
     display: flex;
     gap: 8px;
     margin-left: 20px;
+    align-items: center;
 }
 
 .action-btn {
-    min-width: 120px;
+    min-width: 100px;
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
@@ -652,7 +653,10 @@ form label.required:after {
     color: white;
     transition: all 0.2s ease;
 }
-
+.done-btn {
+    background-color: #28a745;
+    color: white;
+}
 /* Button Colors */
 .submit-btn {
     background-color: #2e8b57;
