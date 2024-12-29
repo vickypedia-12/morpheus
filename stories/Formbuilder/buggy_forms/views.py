@@ -3,9 +3,18 @@ from .models import Form, Question, Response, Answer
 from .forms import FormForm, QuestionForm, ResponseForm
 from collections import defaultdict
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied
 from .forms import UserRegisterForm
 from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Max
+from django.db import transaction
+import qrcode
+import qrcode.image.svg
+from io import BytesIO
+import base64
+from django.urls import reverse
 
 # Admin: Create a new form
 def Base(request):
@@ -43,11 +52,16 @@ def add_question(request, form_id):
     form_obj = get_object_or_404(Form, id=form_id)
     if form_obj.created_by != request.user:
         raise PermissionDenied  # Only form owner can add questions
+    if form_obj.questions.count() >= 100:
+        messages.error(request, "Maximum 100 questions allowed per form")
+        return redirect('list_forms')
     if request.method == 'POST':
         q_form = QuestionForm(request.POST)
         if q_form.is_valid():
             question = q_form.save(commit=False)
             question.form = form_obj
+            max_order = form_obj.questions.aggregate(Max('order'))['order__max'] or 0
+            question.order = max_order + 1
             question.save()
             return redirect('add_question', form_id=form_id)
     else:
@@ -63,10 +77,17 @@ def add_question(request, form_id):
 
 # Admin: List all forms
 def list_forms(request):
-    forms_list = Form.objects.all()
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            forms_list = Form.objects.all()
+        else:
+            forms_list = Form.objects.filter(created_by=request.user)
+    else:
+        forms_list = Form.objects.none()
+        
     return render(request, 'buggy_forms/list_forms.html', {'forms': forms_list})
 
-# User: Submit responses to a form
+
 def submit_response(request, form_id):
     form_obj = get_object_or_404(Form, id=form_id)
     if request.method == 'POST':
@@ -176,21 +197,59 @@ def view_analytics(request, form_id):
 
     return render(request, 'buggy_forms/analytics.html', context)
 
-# Admin: Edit an existing question
+@require_POST
+@login_required
+def reorder_questions(request, form_id):
+    form = get_object_or_404(Form, id=form_id)
+    if form.created_by != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    try:
+        question_ids = request.POST.getlist('questions[]')
+        with transaction.atomic():
+            for index, question_id in enumerate(question_ids):
+                Question.objects.filter(
+                    id=question_id, 
+                    form=form
+                ).update(order=index)
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
 @login_required
 def edit_form(request, form_id):
     form_obj = get_object_or_404(Form, id=form_id)
     if form_obj.created_by != request.user:
-        raise PermissionDenied  # Only form owner can edit the form
+        raise PermissionDenied
+        
     if request.method == 'POST':
         form = FormForm(request.POST, instance=form_obj)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Form updated successfully.')
             return redirect('list_forms')
     else:
         form = FormForm(instance=form_obj)
-    return render(request, 'buggy_forms/list_form_edit.html', {'form': form, 'form_id': form_id})
+    
+    questions = form_obj.questions.all().order_by('order')
+    return render(request, 'buggy_forms/list_form_edit.html', {
+        'form': form,
+        'form_id': form_id,
+        'questions': questions,
+        'form_obj': form_obj
+    })
 
+@login_required
+def delete_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    if question.form.created_by != request.user:
+        raise PermissionDenied
+    
+    form_id = question.form.id
+    question.delete()
+    messages.success(request, 'Question deleted successfully.')
+    return redirect('edit_form', form_id=form_id)
 # Admin: Edit an existing question
 @login_required
 def edit_question(request, question_id):
@@ -209,3 +268,34 @@ def edit_question(request, question_id):
         'form_obj': question.form,
         'question': question
     })
+
+@login_required
+def generate_form_qr(request, form_id):
+    form = get_object_or_404(Form, id=form_id)
+    if form.created_by != request.user:
+        raise PermissionDenied
+    
+    # Generate submission URL
+    submit_url = request.build_absolute_uri(reverse('submit_response', args=[form_id]))
+    
+    # Generate QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(submit_url)
+    qr.make(fit=True)
+    
+    # Create QR code image
+    img_buffer = BytesIO()
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save(img_buffer, format='PNG')
+    qr_image = base64.b64encode(img_buffer.getvalue()).decode()
+    
+    return JsonResponse({
+        'qr_code': qr_image,
+        'submit_url': submit_url
+    })
+
+def custom_404(request, exception):
+    return render(request, 'buggy_forms/404.html', status=404)
+
+def custom_500(request):
+    return render(request, 'buggy_forms/500.html', status=500)

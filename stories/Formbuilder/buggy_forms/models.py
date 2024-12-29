@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 class Form(models.Model):
     title = models.CharField(max_length=200)
@@ -25,6 +26,16 @@ class Question(models.Model):
         null = True,
         help_text="Enter the choices for the Dropdown or CheckBox separated by Comma"
     )
+    order = models.PositiveIntegerField(default=0)  # New field for ordering
+
+    class Meta:
+        ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['form', 'order'],
+                name='unique_question_order'
+            )
+        ]
 
     def __str__(self):
         return f"{self.text}"

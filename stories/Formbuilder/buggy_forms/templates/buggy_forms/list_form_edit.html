@@ -2,12 +2,120 @@
 
 {% block title %}Edit Form{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
 {% block content %}
-    <h2>Edit Form: "{{ form.title }}"</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save Changes</button>
-    </form>
-    <a href="{% url 'list_forms' %}">Back to Forms List</a>
+    <div class="edit-form-container">
+        <h2>Edit Form</h2>
+        
+        <!-- Form Title -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.title.label_tag }}
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.title.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <button type="submit" class="save-btn">Save Title</button>
+        </form>
+
+        <!-- Questions Section -->
+        <div class="questions-section">
+            <h3>Questions</h3>
+            <a href="{% url 'add_question' form_id=form_id %}" class="add-btn">Add New Question</a>
+            
+            <ul id="sortable-questions" class="question-list">
+                {% for question in questions %}
+                    <li class="question-item" data-id="{{ question.id }}">
+                        <span class="handle">☰</span>
+                        <div class="question-content">
+                            <strong>{{ question.text }}</strong>
+                            <span class="question-type">({{ question.get_question_type_display }})</span>
+                            {% if question.choices %}
+                                <div class="choices">Options: {{ question.choices }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="question-actions">
+                            <a href="{% url 'edit_question' question_id=question.id %}" class="edit-btn">Edit</a>
+                            <button type="button" class="delete-btn" onclick="openDeleteModal('{{ question.id }}')">Delete</button>
+                        </div>
+                        
+                        <!-- Add modal at the end of content block -->
+                        <div id="deleteModal" class="modal">
+                            <div class="modal-content">
+                                <h3>Delete Question</h3>
+                                <p>Are you sure you want to delete this question?</p>
+                                <div class="modal-buttons">
+                                    <form id="deleteForm" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
+                                    </form>
+                                    <button onclick="closeDeleteModal()" class="cancel-delete-btn">No, Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% empty %}
+                    <li class="no-questions">No questions added yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+
+    function openDeleteModal(questionId) {
+        document.getElementById('deleteModal').style.display = 'flex';
+        document.getElementById('deleteForm').action = `/delete-question/${questionId}/`;
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    // Close modal if clicking outside
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('deleteModal')) {
+            closeDeleteModal();
+        }
+    }   
+
+    $(document).ready(function() {
+        $("#sortable-questions").sortable({
+            handle: '.handle',
+            update: function(event, ui) {
+                const questions = [];
+                $('.question-item').each(function() {
+                    questions.push($(this).data('id'));
+                });
+                
+                $.ajax({
+                    url: '{% url "reorder_questions" form_id=form_id %}',
+                    type: 'POST',
+                    data: {
+                        'questions[]': questions,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if(response.status === 'success') {
+                            console.log('Reordering successful');
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
 {% endblock %}

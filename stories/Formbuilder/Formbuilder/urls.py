@@ -16,6 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+handler404 = 'buggy_forms.views.custom_404'
+handler500 = 'buggy_forms.views.custom_500'
 
 urlpatterns = [
     # path('/', include('buggy_forms.urls')),
@@ -24,3 +29,6 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
 
 ]
+
+if not settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

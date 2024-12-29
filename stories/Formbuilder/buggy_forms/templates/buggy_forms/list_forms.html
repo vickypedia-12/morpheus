@@ -3,19 +3,30 @@
 {% block title %}All Forms{% endblock %}
 
 {% block content %}
-    <h2>All Forms</h2>
-    <ul>
+<h2>{% if user.is_superuser %}All Forms{% else %}My Forms{% endif %}</h2>
+    <div class="forms-grid">
         {% for form_obj in forms %}
-            <li>
-                <strong>{{ form_obj.title }}</strong> -
-                <a href="{% url 'submit_response' form_id=form_obj.id %}">Submit Response</a> |
-                <a href="{% url 'view_analytics' form_id=form_obj.id %}">View Analytics</a>
-                {% if user.is_authenticated and form_obj.created_by == user %}
-                    | <a href="{% url 'edit_form' form_id=form_obj.id %}">Edit</a>
+            <div class="form-card">
+                <div class="form-info">
+                    <div class="form-title">{{ form_obj.title }}</div>
+                </div>
+                <div class="form-actions">
+                    <a href="{% url 'submit_response' form_id=form_obj.id %}" class="action-btn submit-btn">Submit Response</a>
+                    <a href="{% url 'view_analytics' form_id=form_obj.id %}" class="action-btn analytics-btn">View Analytics</a>
+                    {% if user.is_authenticated and form_obj.created_by == user %}
+                        <a href="{% url 'edit_form' form_id=form_obj.id %}" class="action-btn edit-btn">Edit</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <p>{% if user.is_authenticated %}No forms available{% else %}Please login to view forms{% endif %}</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'create_form' %}" class="create-form-btn">Create a New Form</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="create-form-btn">Login</a>
                 {% endif %}
-            </li>
-        {% empty %}
-            <li>No forms available. <a href="{% url 'create_form' %}">Create a new form</a>.</li>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}

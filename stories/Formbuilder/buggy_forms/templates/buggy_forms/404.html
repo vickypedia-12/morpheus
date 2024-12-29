@@ -1,0 +1,12 @@
+{% extends 'buggy_forms/base.html' %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1>404</h1>
+    <h2>Page Not Found</h2>
+    <p>The page you're looking for doesn't exist.</p>
+    <a href="{% url 'list_forms' %}" class="back-btn">Go Back Home</a>
+</div>
+{% endblock %}
