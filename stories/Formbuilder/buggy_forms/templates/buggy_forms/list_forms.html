@@ -10,7 +10,9 @@
                 <strong>{{ form_obj.title }}</strong> -
                 <a href="{% url 'submit_response' form_id=form_obj.id %}">Submit Response</a> |
                 <a href="{% url 'view_analytics' form_id=form_obj.id %}">View Analytics</a>
-                <a href="{% url 'edit_form' form_id=form_obj.id %}">Edit</a>
+                {% if user.is_authenticated and form_obj.created_by == user %}
+                    | <a href="{% url 'edit_form' form_id=form_obj.id %}">Edit</a>
+                {% endif %}
             </li>
         {% empty %}
             <li>No forms available. <a href="{% url 'create_form' %}">Create a new form</a>.</li>

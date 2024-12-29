@@ -4,33 +4,34 @@
 
 {% block content %}
     <h2>Analytics for "{{ form.title }}"</h2>
-    <p>Total Responses: <strong>{{ analytics.total_responses }}</strong></p>
+    <p>Total Responses: <strong>{{ total_responses }}</strong></p>
 
-    {% for question_id, data in analytics.question_analytics.items %}
-        {% with question=form.questions.get(id=question_id) %}
-            <div class="analytics-section">
-                <h3>{{ question.text }} ({{ question.get_question_type_display }})</h3>
-                {% if question.question_type == 'text' %}
-                    <ul>
-                        {% for word, count in data.items %}
-                            <li><strong>{{ word }}</strong>: {{ count }}</li>
-                        {% endfor %}
-                    </ul>
-                {% elif question.question_type == 'dropdown' %}
-                    <ul>
-                        {% for option, count in data.items %}
-                            <li><strong>{{ option }}</strong>: {{ count }}</li>
-                        {% endfor %}
-                    </ul>
-                {% elif question.question_type == 'checkbox' %}
-                    <ul>
-                        {% for choice, count in data.items %}
-                            <li><strong>{{ choice }}</strong>: {{ count }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-        {% endwith %}
+    {% for qa in question_analytics %}
+        <div class="analytics-section">
+            <h3>{{ qa.question.text }} ({{ qa.question.get_question_type_display }})</h3>
+            {% if qa.question.question_type == 'text' %}
+                <h4>Top Words:</h4>
+                <ul>
+                    {% for word, count in qa.data.items %}
+                        <li><strong>{{ word }}</strong>: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+            {% elif qa.question.question_type == 'dropdown' %}
+                <h4>Option Selections:</h4>
+                <ul>
+                    {% for option, count in qa.data.items %}
+                        <li><strong>{{ option }}</strong>: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+            {% elif qa.question.question_type == 'checkbox' %}
+                <h4>Checkbox Selections:</h4>
+                <ul>
+                    {% for choice, count in qa.data.items %}
+                        <li><strong>{{ choice }}</strong>: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
     {% endfor %}
     
     <a href="{% url 'list_forms' %}">Back to Forms List</a>

@@ -1,5 +1,14 @@
 from django import forms
 from .models import Form, Question, Response, Answer
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+class UserRegisterForm(UserCreationForm):
+    email = forms.EmailField(required=True, help_text='Required. Enter a valid email address.')
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']
 
 class FormForm(forms.ModelForm):
     class Meta:
@@ -38,7 +47,7 @@ class ResponseForm(forms.Form):
                 choices = question.get_choices_list()
                 self.fields[field_name] = forms.ChoiceField(
                     label=question.text,
-                    choices=choices,
+                    choices=[(choice, choice) for choice in choices],  # Ensure choices are tuples
                     required=False,
                     widget=forms.Select()
                 )
@@ -46,7 +55,7 @@ class ResponseForm(forms.Form):
                 choices = question.get_choices_list()
                 self.fields[field_name] = forms.MultipleChoiceField(
                     label=question.text,
-                    choices=choices,
+                    choices=[(choice, choice) for choice in choices],  # Ensure choices are tuples
                     required=False,
                     widget=forms.CheckboxSelectMultiple
                 )

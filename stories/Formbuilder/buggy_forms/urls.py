@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import create_form, add_question, list_forms, submit_response, view_analytics, Base, edit_form, edit_question
+from .views import create_form, register, add_question, list_forms, submit_response, view_analytics, Base, edit_form, edit_question
 
 urlpatterns = [
     path('', Base , name='base'),
@@ -10,4 +10,5 @@ urlpatterns = [
     path('analytics/<int:form_id>/', view_analytics, name='view_analytics'),
     path('edit_form/<int:form_id>/', edit_form, name='edit_form'),
     path('edit_question/<int:question_id>/', edit_question, name='edit_question'),
+    path('register/', register, name='register'),
 ]

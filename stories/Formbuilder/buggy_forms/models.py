@@ -1,7 +1,9 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Form(models.Model):
     title = models.CharField(max_length=200)
+    created_by = models.ForeignKey(User, related_name='forms', null=True, default=None, blank=True , on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -25,12 +27,11 @@ class Question(models.Model):
     )
 
     def __str__(self):
-        return f"{self.form.title} - {self.text}"
+        return f"{self.text}"
 
     def get_choices_list(self):
-        if self.choices:
-            return [(choice.strip(), choice.strip()) for choice in self.choices.split(',')]
-        return []
+        return [choice.strip() for choice in self.choices.split(',')] if self.choices else []
+
     
     
 
@@ -41,5 +42,8 @@ class Response(models.Model):
 class Answer(models.Model):
     response = models.ForeignKey(Response, related_name='answers', on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
-    text_answer = models.TextField(blank=True, null=True)
-    selected_options = models.JSONField(blank=True, null=True)
+    text_answer = models.TextField(max_length=500, blank=True, null=True)
+    selected_options = models.JSONField(max_length=500,blank=True, null=True)
+
+    def __str__(self):
+        return f'Answer to {self.question.text}'

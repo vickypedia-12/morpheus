@@ -21,5 +21,6 @@ urlpatterns = [
     # path('/', include('buggy_forms.urls')),
     path('', include('buggy_forms.urls')),
     path('admin/', admin.site.urls),
-    
+    path('accounts/', include('django.contrib.auth.urls')),
+
 ]
