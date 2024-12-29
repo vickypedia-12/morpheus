@@ -1,0 +1,19 @@
+{% extends 'buggy_forms/base.html' %}
+
+{% block title %}All Forms{% endblock %}
+
+{% block content %}
+    <h2>All Forms</h2>
+    <ul>
+        {% for form_obj in forms %}
+            <li>
+                <strong>{{ form_obj.title }}</strong> -
+                <a href="{% url 'submit_response' form_id=form_obj.id %}">Submit Response</a> |
+                <a href="{% url 'view_analytics' form_id=form_obj.id %}">View Analytics</a>
+                <a href="{% url 'edit_form' form_id=form_obj.id %}">Edit</a>
+            </li>
+        {% empty %}
+            <li>No forms available. <a href="{% url 'create_form' %}">Create a new form</a>.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'buggy_forms/base.html' %}
+
+{% block title %}Submit Response{% endblock %}
+
+{% block content %}
+    <h2>Submit Response for "{{ form_obj.title }}"</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in r_form %}
+            <p>
+                <label>{{ field.label }}:</label><br>
+                {{ field }}
+                {% if field.errors %}
+                    <span class="error">{{ field.errors }}</span>
+                {% endif %}
+            </p>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+    
+    <a href="{% url 'list_forms' %}">Back to Forms List</a>
+{% endblock %}

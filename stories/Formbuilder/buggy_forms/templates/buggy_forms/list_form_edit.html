@@ -1,0 +1,13 @@
+{% extends 'buggy_forms/base.html' %}
+
+{% block title %}Edit Form{% endblock %}
+
+{% block content %}
+    <h2>Edit Form: "{{ form.title }}"</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+    <a href="{% url 'list_forms' %}">Back to Forms List</a>
+{% endblock %}

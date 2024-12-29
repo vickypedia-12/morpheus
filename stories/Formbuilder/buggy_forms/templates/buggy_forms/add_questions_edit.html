@@ -1,0 +1,46 @@
+{% extends 'buggy_forms/base.html' %}
+
+{% block title %}Edit Question{% endblock %}
+
+{% block content %}
+    <h2>Edit Question in "{{ form_obj.title }}"</h2>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            {{ q_form.text.label_tag }}<br>
+            {{ q_form.text }}
+            {% if q_form.text.errors %}
+                <span class="error">{{ q_form.text.errors }}</span>
+            {% endif %}
+        </p>
+        <p>
+            {{ q_form.question_type.label_tag }}<br>
+            {{ q_form.question_type }}
+            {% if q_form.question_type.errors %}
+                <span class="error">{{ q_form.question_type.errors }}</span>
+            {% endif %}
+        </p>
+        <p id="div_id_choices">
+            {{ q_form.choices.label_tag }}<br>
+            {{ q_form.choices }}
+            {% if q_form.choices.errors %}
+                <span class="error">{{ q_form.choices.errors }}</span>
+            {% endif %}
+        </p>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <h3>Existing Questions:</h3>
+    <ul>
+        {% for question in form_obj.questions.all %}
+            <li>
+                <strong>{{ question.text }}</strong> ({{ question.get_question_type_display }})
+                - <a href="{% url 'edit_question' question_id=question.id %}">Edit</a>
+            </li>
+        {% empty %}
+            <li>No questions available.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'list_forms' %}">Back to Forms List</a>
+{% endblock %}
