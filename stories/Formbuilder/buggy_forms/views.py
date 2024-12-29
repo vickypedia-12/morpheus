@@ -4,6 +4,7 @@ from .forms import FormForm, QuestionForm, ResponseForm
 from collections import defaultdict
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect, csrf_exempt, ensure_csrf_cookie
 from django.core.exceptions import PermissionDenied
 from .forms import UserRegisterForm
 from django.contrib import messages
@@ -15,12 +16,34 @@ import qrcode.image.svg
 from io import BytesIO
 import base64
 from django.urls import reverse
+from django.contrib.auth import authenticate, login
+
 
 # Admin: Create a new form
+@csrf_protect
 def Base(request):
+    """
+    Renders the base template.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request.
+
+    Returns:
+        HttpResponse: Rendered base HTML page.
+    """
     return render(request, 'buggy_forms/base.html')
 
+@csrf_exempt
 def register(request):
+    """
+    Handles user registration.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request.
+
+    Returns:
+        HttpResponse: Redirects to login on successful registration or renders the registration form.
+    """
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -35,6 +58,15 @@ def register(request):
 
 @login_required
 def create_form(request):
+    """
+    Allows authenticated users to create a new form.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request.
+
+    Returns:
+        HttpResponse: Redirects to add questions on successful form creation or renders the form creation page.
+    """
     if request.method == 'POST':
         form = FormForm(request.POST)
         if form.is_valid():
@@ -77,6 +109,15 @@ def add_question(request, form_id):
 
 # Admin: List all forms
 def list_forms(request):
+    """
+    Displays a list of forms based on user authentication and permissions.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request.
+
+    Returns:
+        HttpResponse: Rendered HTML page with the list of forms.
+    """
     if request.user.is_authenticated:
         if request.user.is_superuser:
             forms_list = Form.objects.all()
@@ -300,6 +341,8 @@ def custom_404(request, exception):
 def custom_500(request):
     return render(request, 'buggy_forms/500.html', status=500)
 
+@ensure_csrf_cookie
+@csrf_protect
 @login_required
 def delete_form(request, form_id):
     form = get_object_or_404(Form, id=form_id)
@@ -311,3 +354,21 @@ def delete_form(request, form_id):
         messages.success(request, 'Form deleted successfully.')
         return redirect('list_forms')
     return redirect('edit_form', form_id=form_id)
+
+@csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            print("Usser found")
+            messages.success(request, f'Welcome back, {username}!')
+            return redirect('list_forms')
+        else:
+            messages.error(request, 'Invalid email or password. Please try again.')
+            return render(request, 'registration/login.html')
+    
+    return render(request, 'registration/login.html')

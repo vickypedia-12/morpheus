@@ -11,12 +11,26 @@
                     <div class="form-title">{{ form_obj.title }}</div>
                 </div>
                 <div class="form-actions">
-                    <a href="{% url 'submit_response' form_id=form_obj.id %}" class="action-btn submit-btn">Submit Response</a>
                     <a href="{% url 'view_analytics' form_id=form_obj.id %}" class="action-btn analytics-btn">View Analytics</a>
                     {% if user.is_authenticated and form_obj.created_by == user %}
                         <a href="{% url 'edit_form' form_id=form_obj.id %}" class="action-btn edit-btn">Edit</a>
                     {% endif %}
+                    <button onclick="showShareModal('{{ form_obj.id }}')" class="done-btn">Share</button>
                 </div>
+                <div id="shareModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h3>Share Form</h3>
+                        <div class="qr-container">
+                            <img id="qrCode" alt="QR Code">
+                        </div>
+                        <div class="share-link">
+                            <input type="text" id="shareUrl" readonly>
+                            <button onclick="copyLink()" class="copy-btn">Copy Link</button>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
             {% empty %}
             <div class="empty-state">
@@ -29,4 +43,42 @@
             </div>
         {% endfor %}
     </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+    function showShareModal(formId) {
+    fetch(`/generate-form-qr/${formId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('qrCode').src = `data:image/png;base64,${data.qr_code}`;
+            document.getElementById('shareUrl').value = data.submit_url;
+            document.getElementById('shareModal').style.display = 'flex';
+        });
+}
+
+    function copyLink() {
+        const shareUrl = document.getElementById('shareUrl');
+        const copyBtn = document.querySelector('.copy-btn');
+        shareUrl.select();
+        document.execCommand('copy');
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+            copyBtn.textContent = 'Copy Link';
+        }, 2000);
+    }
+
+    // Close modal when clicking X or outside
+    document.querySelector('.close').onclick = function() {
+        document.getElementById('shareModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('shareModal')) {
+            document.getElementById('shareModal').style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}

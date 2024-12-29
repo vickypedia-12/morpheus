@@ -1,0 +1,13 @@
+asgiref==3.8.1
+captcha==0.6.0
+cffi==1.17.1
+cryptography==44.0.0
+Django==4.2.17
+django-form-builder==1.2.1
+filesig==0.3.0.post1
+pillow==11.0.0
+pycparser==2.22
+qrcode==8.0
+sqlparse==0.5.3
+wheel==0.45.1
+whitenoise==6.8.2

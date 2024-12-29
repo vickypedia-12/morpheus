@@ -1,148 +1,179 @@
-{% extends 'buggy_forms/base.html' %}
-
-{% block title %}Add Question{% endblock %}
-
+{% extends 'buggy_forms/base.html' %} {% block title %}Add Question{% endblock%} 
 {% block extra_head %}
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-{% endblock %}
+<link
+  rel="stylesheet"
+  href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
+/>
+{% endblock %} {% block content %}
+<h2>Add Question to "{{ form_obj.title }}"</h2>
+<form method="post">
+  {% csrf_token %}
+  <div class="form-group">
+      {{ q_form.text.label_tag }}
+      {{ q_form.text }}
+      {% if q_form.text.errors %}
+          <ul class="errorlist">
+              {% for error in q_form.text.errors %}
+                  <li>{{ error }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}
+  </div>
+  <div class="form-group">
+      {{ q_form.question_type.label_tag }}
+      {{ q_form.question_type }}
+      {% if q_form.question_type.errors %}
+          <ul class="errorlist">
+              {% for error in q_form.question_type.errors %}
+                  <li>{{ error }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}
+  </div>
+  {% if q_form.question_type.value == 'CHOICE' %}
+      <div class="form-group">
+          {{ q_form.choices.label_tag }}
+          {{ q_form.choices }}
+          {% if q_form.choices.errors %}
+              <ul class="errorlist">
+                  {% for error in q_form.choices.errors %}
+                      <li>{{ error }}</li>
+                  {% endfor %}
+              </ul>
+          {% endif %}
+      </div>
+  {% endif %}
+  <button type="submit">Add Question</button>
+</form>
 
-{% block content %}
-    <h2>Add Question to "{{ form_obj.title }}"</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            {{ q_form.text.label_tag }}
-            {{ q_form.text }}
-            {% if q_form.text.errors %}
-                <ul class="errorlist">
-                    {% for error in q_form.text.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div class="form-group">
-            {{ q_form.question_type.label_tag }}
-            {{ q_form.question_type }}
-            {% if q_form.question_type.errors %}
-                <ul class="errorlist">
-                    {% for error in q_form.question_type.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div class="form-group">
-            {{ q_form.choices.label_tag }}
-            {{ q_form.choices }}
-            {% if q_form.choices.errors %}
-                <ul class="errorlist">
-                    {% for error in q_form.choices.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <button type="submit">Add Question</button>
-    </form>
+<h3>Existing Questions:</h3>
+<ul id="sortable-questions" class="sortable-list">
+  {% for question in questions %}
+  <li class="question-item" data-id="{{ question.id }}">
+    <span class="handle">☰</span>
+    <span class="question-text"
+      ><strong>{{ question.text }}</strong> ({{
+      question.get_question_type_display }})</span
+    >
+    <a href="{% url 'edit_question' question_id=question.id %}" class="edit-btn"
+      >Edit</a
+    >
+  </li>
+  {% empty %}
+  <li>No questions added yet.</li>
+  {% endfor %}
+</ul>
 
-    <h3>Existing Questions:</h3>
-    <ul id="sortable-questions" class="sortable-list">
-        {% for question in questions %}
-            <li class="question-item" data-id="{{ question.id }}">
-                <span class="handle">☰</span>
-                <span class="question-text"><strong>{{ question.text }}</strong> ({{ question.get_question_type_display }})</span>
-                <a href="{% url 'edit_question' question_id=question.id %}" class="edit-btn">Edit</a>
-            </li>
-        {% empty %}
-            <li>No questions added yet.</li>
-        {% endfor %}
-    </ul>
-
-    <div id="shareModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Share Form</h3>
-            <div class="qr-container">
-                <img id="qrCode" alt="QR Code">
-            </div>
-            <div class="share-link">
-                <input type="text" id="shareUrl" readonly>
-                <button onclick="copyLink()" class="copy-btn">Copy Link</button>
-            </div>
-        </div>
+<div id="shareModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Share Form</h3>
+    <div class="qr-container">
+      <img id="qrCode" alt="QR Code" />
     </div>
-    
-    <button onclick="showShareModal('{{ form_obj.id }}')" class="done-btn">Done</button>
+    <div class="share-link">
+      <input type="text" id="shareUrl" readonly />
+      <button onclick="copyLink()" class="copy-btn">Copy Link</button>
+    </div>
+  </div>
+</div>
 
-{% endblock %}
+<button onclick="showShareModal('{{ form_obj.id }}')" class="done-btn">
+  Done
+</button>
 
+{% endblock %} 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $("#sortable-questions").sortable({
-            handle: '.handle',
-            update: function(event, ui) {
-                var questions = [];
-                $('.question-item').each(function() {
-                    questions.push($(this).data('id'));
-                });
-                
-                $.ajax({
-                    url: '{% url "reorder_questions" form_id=form_obj.id %}',
-                    type: 'POST',
-                    data: {
-                        'questions[]': questions,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        if(response.status === 'success') {
-                            console.log('Reordering successful');
-                        } else {
-                            console.error('Reordering failed:', response.error);
-                            alert('Reordering failed: ' + response.error);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
-                    }
-                });
+  $(document).ready(function () {
+    $("#sortable-questions").sortable({
+      handle: ".handle",
+      update: function (event, ui) {
+        var questions = [];
+        $(".question-item").each(function () {
+          questions.push($(this).data("id"));
+        });
+
+        $.ajax({
+          url: '{% url "reorder_questions" form_id=form_obj.id %}',
+          type: "POST",
+          data: {
+            "questions[]": questions,
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+          },
+          success: function (response) {
+            if (response.status === "success") {
+              console.log("Reordering successful");
+            } else {
+              console.error("Reordering failed:", response.error);
+              alert("Reordering failed: " + response.error);
             }
+          },
+          error: function (xhr, status, error) {
+            console.error("AJAX error:", error);
+          },
         });
+      },
     });
+  });
 
-    function showShareModal(formId) {
+  function showShareModal(formId) {
     fetch(`/generate-form-qr/${formId}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('qrCode').src = `data:image/png;base64,${data.qr_code}`;
-            document.getElementById('shareUrl').value = data.submit_url;
-            document.getElementById('shareModal').style.display = 'flex';
-        });
-}
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById(
+          "qrCode"
+        ).src = `data:image/png;base64,${data.qr_code}`;
+        document.getElementById("shareUrl").value = data.submit_url;
+        document.getElementById("shareModal").style.display = "flex";
+      });
+  }
 
-    function copyLink() {
-        const shareUrl = document.getElementById('shareUrl');
-        const copyBtn = document.querySelector('.copy-btn');
-        shareUrl.select();
-        document.execCommand('copy');
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => {
-            copyBtn.textContent = 'Copy Link';
-        }, 2000);
+  function copyLink() {
+    const shareUrl = document.getElementById("shareUrl");
+    const copyBtn = document.querySelector(".copy-btn");
+    shareUrl.select();
+    document.execCommand("copy");
+    copyBtn.textContent = "Copied!";
+    setTimeout(() => {
+      copyBtn.textContent = "Copy Link";
+    }, 2000);
+  }
+
+  // Close modal when clicking X or outside
+  document.querySelector(".close").onclick = function () {
+    document.getElementById("shareModal").style.display = "none";
+  };
+
+  window.onclick = function (event) {
+    if (event.target == document.getElementById("shareModal")) {
+      document.getElementById("shareModal").style.display = "none";
     }
-
-    // Close modal when clicking X or outside
-    document.querySelector('.close').onclick = function() {
-        document.getElementById('shareModal').style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('shareModal')) {
-            document.getElementById('shareModal').style.display = 'none';
+  };
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
+      }
     }
+    return cookieValue;
+  }
+
+  // Add CSRF token to AJAX requests
+  const csrftoken = getCookie("csrftoken");
+
+  $.ajaxSetup({
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+  });
 </script>
 {% endblock %}

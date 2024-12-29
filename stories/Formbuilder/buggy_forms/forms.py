@@ -4,6 +4,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
 class UserRegisterForm(UserCreationForm):
+    """
+    Form for registering a new user.
+
+    Attributes:
+        email (EmailField): The user's email address.
+    """
     email = forms.EmailField(required=True, help_text='Required. Enter a valid email address.')
 
     class Meta:
@@ -11,11 +17,26 @@ class UserRegisterForm(UserCreationForm):
         fields = ['email','username',  'password1', 'password2']
 
 class FormForm(forms.ModelForm):
+    """
+    Form for creating a new Form.
+
+    Meta:
+        model (Form): The associated model.
+        fields (list): Fields to include in the form.
+    """
     class Meta:
         model = Form
         fields = ['title']
 
 class QuestionForm(forms.ModelForm):
+    """
+    Form for creating a new Question.
+
+    Meta:
+        model (Question): The associated model.
+        fields (list): Fields to include in the form.
+        widgets (dict): Widgets to use for specific fields.
+    """
     class Meta:
         model = Question
         fields = ['text', 'question_type', 'choices']
@@ -24,6 +45,14 @@ class QuestionForm(forms.ModelForm):
         }
 
     def clean(self):
+        """
+        Validates the form data.
+
+        Ensures that choices are provided for Dropdown and Checkbox question types.
+
+        Returns:
+            dict: Cleaned data.
+        """
         cleaned_data = super().clean()
         question_type = cleaned_data.get('question_type')
         choices = cleaned_data.get('choices')

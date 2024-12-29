@@ -3,6 +3,13 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 class Form(models.Model):
+    """
+    Represents a user-created form.
+
+    Attributes:
+        title (str): The title of the form.
+        created_by (ForeignKey to User): The user who created the form.
+    """
     title = models.CharField(max_length=200)
     created_by = models.ForeignKey(User, related_name='forms', null=True, default=None, blank=True , on_delete=models.CASCADE)
 
