@@ -33,7 +33,6 @@ def Base(request):
     """
     return render(request, 'buggy_forms/base.html')
 
-@csrf_exempt
 def register(request):
     """
     Handles user registration.
@@ -355,7 +354,7 @@ def delete_form(request, form_id):
         return redirect('list_forms')
     return redirect('edit_form', form_id=form_id)
 
-@csrf_exempt
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')

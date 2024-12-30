@@ -30,39 +30,37 @@
           </ul>
       {% endif %}
   </div>
-  {% if q_form.question_type.value == 'CHOICE' %}
-      <div class="form-group">
-          {{ q_form.choices.label_tag }}
-          {{ q_form.choices }}
-          {% if q_form.choices.errors %}
-              <ul class="errorlist">
-                  {% for error in q_form.choices.errors %}
-                      <li>{{ error }}</li>
-                  {% endfor %}
-              </ul>
-          {% endif %}
-      </div>
-  {% endif %}
+  <div class="form-group" id="div_id_choices">
+    {{ q_form.choices.label_tag }}
+    {{ q_form.choices }}
+    {% if q_form.choices.errors %}
+        <ul class="errorlist">
+            {% for error in q_form.choices.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+  </div>
   <button type="submit">Add Question</button>
 </form>
 
 <h3>Existing Questions:</h3>
-<ul id="sortable-questions" class="sortable-list">
+<ul id="sortable-questions" class="question-list">
   {% for question in questions %}
   <li class="question-item" data-id="{{ question.id }}">
     <span class="handle">☰</span>
     <span class="question-text"
-      ><strong>{{ question.text }}</strong> ({{
-      question.get_question_type_display }})</span
+      ><strong>{{ question.text }}</strong> ({{question.get_question_type_display }})</span
     >
     <a href="{% url 'edit_question' question_id=question.id %}" class="edit-btn"
       >Edit</a
     >
   </li>
   {% empty %}
-  <li>No questions added yet.</li>
+      <li>No questions added yet.</li>
   {% endfor %}
 </ul>
+
 
 <div id="shareModal" class="modal">
   <div class="modal-content">
@@ -175,5 +173,7 @@
       "X-CSRFToken": csrftoken,
     },
   });
+
+  
 </script>
 {% endblock %}
